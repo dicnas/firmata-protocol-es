@@ -1,23 +1,23 @@
-# Firmata Protocol Documentation
+# Documentacion del Protocolo Firmata
+[Documentacion original](https://github.com/firmata/protocol)
 
 [![Join the chat at https://gitter.im/firmata/protocol](https://badges.gitter.im/firmata/protocol.svg)](https://gitter.im/firmata/protocol?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Firmata is a protocol for communicating with microcontrollers from software on a computer (or smartphone/tablet, etc). The protocol can be implemented in firmware on any microcontroller architecture as well as software on any computer software package (see list of client libraries below).
+Firmata es un protocolo para la comunicación con microcontroladores desde software en un ordenador (o smartphone/tableta, etc.). El protocolo se puede implementar en el firmware en cualquier arquitectura de microcontrolador, así como software en cualquier paquete de software de computadora (consulte la lista de bibliotecas de cliente a continuación).
 
-Firmata is based on the [midi message format](http://www.midi.org/techspecs/midimessages.php) in that commands bytes are 8 bits and data bytes are 7 bits. For example the midi Channel Pressure (Command: 0xD0) message is 2 bytes long, in Firmata the Command 0xD0 is used to enable reporting for a digital port (collection of 8 pins). Both the midi and Firmata versions are 2 bytes long, but the meaning is obviously different. In Firmata, the number of bytes in a message must conform with the corresponding midi message. Midi [System Exclusive](http://www.2writers.com/eddie/tutsysex.htm) (Sysex) messages however, can be any length and are therefore used most prominently throughout the Firmata protocol.
+Firmata se basa en el [formato de mensaje midi](http://www.midi.org/techspecs/midimessages.php) en que los bytes de comandos son 8 bits y los bytes de datos son 7 bits. Por ejemplo el mensaje MIDI Channel Pressure (Comando: 0xD0) tiene 2 bytes de longitud, en Firmata el Comando 0xD0 se utiliza para habilitar la generación de informes para un puerto digital (coleccion de 8 pines). Las versiones midi y Firmata tienen 2 bytes de largo, pero el significado es obviamente diferente. En Firmata, el número de bytes de un mensaje debe ajustarse al mensaje midi correspondiente. Midi [System Exclusive](http://www.2writers.com/eddie/tutsysex.htm) (Sysex) mensajes sin embargo, puede ser de cualquier longitud y por lo tanto se utilizan de manera más prominente en todo el protocolo Firmata.
 
-This repository contains documentation of the Firmata protocol. The core of the protocol is described in the [protocol.md file](protocol.md) file. Feature-specific documentation is described in individual markdown files ([i2c.md](i2c.md), [accelStepperFirmata.md](https://github.com/firmata/protocol/blob/master/accelStepperFirmata.md), [servos.md](servos.md), etc). Files added to the proposals directory are proposals for new features that have not yet been finalized. See [firmata-registry.md](https://github.com/firmata/protocol/blob/master/feature-registry.md) for the full list of documented firmata features.
+Este repositorio contiene documentación del protocolo Firmata. El núcleo del protocolo se describe en el archivo [protocol.md file](protocol.md). La documentación específica de alguna característica se describe en archivos markdowns individuales ([i2c.md](i2c.md), [accelStepperFirmata.md](https://github.com/firmata/protocol/blob/master/accelStepperFirmata.md), [servos.md](servos.md), etc). Los archivos añadidos al directorio de propuestas son propuestas para nuevas características que aún no se han finalizado. Consulte [firmata-registry.md](https://github.com/firmata/protocol/blob/master/feature-registry.md) para obtener la lista completa de características firmata documentadas.
 
-The Firmata protocol could theoretically be implemented for any microcontroller platform. Currently however, the most complete implementation is for [Arduino](http://arduino.cc) (including Arduino-compatible microcontrollers). Here are the known Firmata microcontroller platform implementations:
+El protocolo Firmata teóricamente podría implementarse para cualquier plataforma de microcontrolador. Actualmente, sin embargo, la implementación más completa es para [Arduino](http://arduino.cc) (incluidos los microcontroladores compatibles con Arduino). Estas son las implementaciones conocidas de la plataforma de microcontrolador Firmata:
 
-* [Firmata for Arduino](https://github.com/firmata/arduino)
-* [Firmata for Spark.io](https://github.com/firmata/spark)
+* [Firmata para Arduino](https://github.com/firmata/arduino)
+* [Firmata para Spark.io](https://github.com/firmata/spark)
 
+*Tenga en cuenta: Estoy seguro de que hay otras implementaciones. Si conoce a otros, envíe una solicitud a la [Documentacion original](https://github.com/firmata/protocol) para actualizar este archivo Léame o abra un issue que proporcione el vínculo que se agregará a este documento.*
 
-*Please note: I'm sure there are other implementations. If you know of others, please submit a pull request to update this readme file, or open an issue providing the link to be added to this document.*
-
-## Firmata client libraries
-There are several client libraries. These are libraries that implement the Firmata protocol in order to communicate (from a computer, smartphone or tablet for example) with Firmata firmware running on a microcontroller platform. The following is a list of Firmata client library implementations:
+## Bibliotecas de Clientes Firmata
+Hay varias bibliotecas de cliente. Se trata de bibliotecas que implementan el protocolo Firmata para comunicarse (por ejemplo desde un ordenador, smartphone o tableta) con el firmware de Firmata ejecutándose en una plataforma de microcontrolador. A continuación se muestra una lista de implementaciones de biblioteca de cliente de Firmata:
 
 * processing
   * [https://github.com/firmata/processing]
@@ -77,19 +77,8 @@ There are several client libraries. These are libraries that implement the Firma
 * Smalltalk
   * [https://github.com/pharo-iot/Firmata] 
 
-*Each client library may not support the most recent version of the Firmata protocol and all features described in this reposity.*
+*Es posible que cada biblioteca de cliente no admita la versión más reciente del protocolo Firmata y todas las características descritas en este repositorio.*
 
-## Contributing
+## Contribuir
 
-To submit a proposal for a new feature, create a [markdown](https://help.github.com/articles/github-flavored-markdown/) file for your proposal and append "-proposal" to the filename. Submit a pull request to add the proposal.
-
-To make a change to an existing protocol, submit a pull request with your proposed changes. Be sure to provide any rationale in the pull request description.
-
-Some hints for drafting a new proposal:
-
-* See [feature-registry.md](https://github.com/firmata/protocol/blob/master/feature-registry.md) for information on proposing a new feature and requesting a feature ID.
-* Use sub-commands (3rd byte) as necessary if you have more than one message. See the [accelStepperFirmata.md](https://github.com/firmata/protocol/blob/master/accelStepperFirmata.md) file for an example. Note the use of `0x62` for the feature ID and how each section has an enumerated set of subcommands (0x00 = config, 0x01 = zero, 02 = step, etc).
-* It's okay to have optional values in a sysex message as long as those values are all at the end of the message. See the bytes 6 & 7 of the `SERIAL_CONFIG` message in [serial-1.0.md](https://github.com/firmata/protocol/blob/master/serial-1.0.md)
-* Try to keep your sysex messages as short as possible.
-* Pack bits if necessary. See the Response message for **Report encoder's position** in [encoder.md](encoder.md) for an example (also note how this was documented following the response message... please include similar documentation if you use bit packing in your proposal).
-* If your proposal uses any of the available non-sysex midi messages, the number of bytes in the message must correspond to the number of bytes in the midi message. The meaning however does not need to be the same. However if the midi message uses channels (such as Note Off (0x80)) then the Firmata message must also use channels since a midi parser may expect this.
+Ir a la [Documentacion original](https://github.com/firmata/protocol) para enviar una propuesta para una nueva característica
