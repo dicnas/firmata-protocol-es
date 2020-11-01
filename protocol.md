@@ -1,197 +1,195 @@
-protocol
+Protocolo
 ========
 
-Current version: 2.6.0
+Version Actual: 2.6.0
 
-The intention of this protocol is to allow as much of the microcontroller to be controlled as possible from the host computer. This protocol was designed for the direct communication between a microcontroller and a software object on a host computer. The host software object should then provide an interface that makes sense in that environment.
+La intención de este protocolo es permitir que la mayor parte del microcontrolador se controle como sea posible desde el equipo host o remoto. Este protocolo fue diseñado para la comunicación directa entre un microcontrolador y un software en un equipo host. A continuación, el software host debe proporcionar una interfaz que tenga sentido en ese entorno.
 
-The data communication format uses MIDI messages. It is not necessarily a MIDI device, first it uses a faster serial speed, and second, the messages don't always map the same.
+El formato de comunicación de datos utiliza mensajes MIDI. No es necesariamente un dispositivo MIDI, primero utiliza una velocidad de serie más rápida, y en segundo lugar, los mensajes no siempre se asignan de la misma manera.
 
 
-Message Types
+Tipo de Mensaje
 ===
 
-This protocol uses the [MIDI message format](http://www.midi.org/techspecs/midimessages.php), but does not use the whole protocol.
-Most of the command mappings here will not be directly usable in terms of MIDI controllers and synths. It should co-exist with MIDI without trouble and can be parsed by standard MIDI interpreters. Just some of the message data is used
-differently.
+Este protocolo utiliza el [formato de mensaje MIDI](http://www.midi.org/techspecs/midimessages.php), pero no utiliza todo el protocolo.
+La mayoría de las asignaciones de comandos aquí no serán directamente utilizables en términos de controladores MIDI y sintetizadores. Debe coexistir con MIDI sin problemas y puede ser analizado por intérpretes MIDI estándar. Sólo algunos de los datos del mensaje se utilizan diferentemente.
 
 
-| type                  | command | MIDI channel | first byte          | second byte     |
-| --------------------- | ------- | ------------ | ------------------- | --------------- |
-| analog I/O message    | 0xE0    | pin #        | LSB(bits 0-6)       | MSB(bits 7-13)  |
-| digital I/O message   | 0x90    | port         | LSB(bits 0-6)       | MSB(bits 7-13)  |
-| report analog pin     | 0xC0    | pin #        | disable/enable(0/1) | - n/a -         |
-| report digital port   | 0xD0    | port         | disable/enable(0/1) | - n/a -         |
-|                       |         |              |                     |                 |
-| start sysex           | 0xF0    |              |                     |                 |
-| set pin mode(I/O)     | 0xF4    |              | pin # (0-127)       | pin mode        |
-| set digital pin value | 0xF5    |              | pin # (0-127)       | pin value(0/1)  |
-| sysex end             | 0xF7    |              |                     |                 |
-| protocol version      | 0xF9    |              | major version       | minor version   |
-| system reset          | 0xFF    |              |                     |                 |
+| Tipo                   | Comando | Canal MIDI   | Primer byte         | Segundo byte    |
+| ---------------------- | ------- | ------------ | ------------------- | --------------- |
+| analog I/O message     | 0xE0    | pin #        | LSB(bits 0-6)       | MSB(bits 7-13)  |
+| digital I/O message    | 0x90    | port         | LSB(bits 0-6)       | MSB(bits 7-13)  |
+| report analog pin      | 0xC0    | pin #        | disable/enable(0/1) | - n/a -         |
+| report digital port    | 0xD0    | port         | disable/enable(0/1) | - n/a -         |
+|                        |         |              |                     |                 |
+| start sysex            | 0xF0    |              |                     |                 |
+| set pin mode(I/O)      | 0xF4    |              | pin # (0-127)       | pin mode        |
+| set digital pin value  | 0xF5    |              | pin # (0-127)       | pin value(0/1)  |
+| sysex end              | 0xF7    |              |                     |                 |
+| Version Protocolo      | 0xF9    |              | Version Principal   | Version Menor   |
+| Reinicio (system reset)| 0xFF    |              |                     |                 |
 
 
-Sysex-based sub-commands (0x00 - 0x7F) are used for an extended command set.
+Los sub commands basados en Sysex (0x00 - 0x7F) se utilizan para un conjunto de comandos extendido.
 
-| type                  | sub-command | first byte       | second byte   | ...            |
+| Tipo                  | sub-comando | Primer byte      | Segundo byte  | ...            |
 | --------------------- | -------     | ---------------  | ------------- | -------------- |
 | string                | 0x71        | char *string ... |               |                |
-| firmware name/version | 0x79        | major version    | minor version | char *name ... |
+| firmware name/version | 0x79        | Version Principal| Version Menor | char *name ... |
 
 
-Data Message Expansion
+Expansion de Mensaje de Datos
 ===
 
-Two byte digital data format, second nibble of byte 0 gives the port number (eg 0x92 is the third port, port 2)
+Formato de datos digitales de dos bytes, segundo nibble del byte 0 da el numero del puerto (ej. 0x92 es el tercer puerto, puerto 2)
 ```
-0  digital data, 0x90-0x9F, (MIDI NoteOn, bud different data format)
+0  digital data, 0x90-0x9F, (En MIDI es NoteOn, pero diferente formato de datos)
 1  digital pins 0-6 bitmask
 2  digital pin 7 bitmask
 ```
 
-Analog 14-bit data format
+Formato de Datos Analogico de 14-bit
 ```
-0  analog pin, 0xE0-0xEF, (MIDI Pitch Wheel)
-1  analog least significant 7 bits
-2  analog most significant 7 bits
-```
-Version report format
-```
-0  version report header (0xF9) (MIDI Undefined)
-1  major version (0-127)
-2  minor version (0-127)
+0  pin analogico, 0xE0-0xEF, (En MIDI es Pitch Wheel)
+1  analogico menos significativo 7 bits
+2  analogico mas significativo 7 bits
 ```
 
-Control Messages Expansion
+Formato Informe de Version
+```
+0  Cabecera Informe de Version (0xF9) (En MIDI no esta definido)
+1  Principal version (0-127)
+2  Menor version (0-127)
+```
+
+Expansión de mensajes de control
 ===
 
-Set pin mode
+Establecer el modo del pin
 ```
-0  set digital pin mode (0xF4) (MIDI Undefined)
-1  set pin number (0-127)
-2  mode (INPUT/OUTPUT/ANALOG/PWM/SERVO/I2C/ONEWIRE/STEPPER/ENCODER/SERIAL/PULLUP, 0/1/2/3/4/6/7/8/9/10/11)
-```
-
-Set digital pin value (added in v2.5)
-```
-0  set digital pin value (0xF5) (MIDI Undefined)
-1  set pin number (0-127)
-2  value (LOW/HIGH, 0/1)
+0  establecer modo digital del pin (0xF4) (En MIDI no esta definido)
+1  establecer el numero del pin (0-127)
+2  modo (INPUT=0/OUTPUT=1/ANALOG=2/PWM=3/SERVO=4/I2C=6/ONEWIRE=7/STEPPER=8/ENCODER=9/SERIAL=10/PULLUP=11)
 ```
 
-Toggle analogIn reporting by pin
+Establecer el valor del pin (agregado en la v2.5)
 ```
-0  toggle analogIn reporting (0xC0-0xCF) (MIDI Program Change)
-1  disable(0) / enable(non-zero)
+0  establecer el valor del pin (0xF5) (En MIDI no esta definido)
+1  establecer el numero del pin (0-127)
+2  valor (LOW=0/HIGH=1)
 ```
-*As of Firmata 2.4.0, upon enabling an analog pin, the pin value should be reported to the client
-application.*
+
+Alternar informes analogIn por pin
+```
+0  alternar informes analogIn (0xC0-0xCF) (En MIDI es Program Change)
+1  desactivar(0) / habilitar(no-zero)
+```
+*A partir de Firmata 2.4.0, al habilitar un pin analógico, el valor del pin debe ser reportado al cliente aplicación.*
 
 Toggle digital port reporting by port (second nibble of byte 0), eg 0xD1 is port 1 is pins 8 to 15
+Alternar los informes de puerto digital por puerto (segundo nibble del byte 0), por ejemplo 0xD1 es el puerto 1 es pines 8 al 15
 ```
-0  toggle digital port reporting (0xD0-0xDF) (MIDI Aftertouch)
-1  disable(0) / enable(non-zero)
+0  alternar informes de los puertos digitales (0xD0-0xDF) (En MIDI es Aftertouch)
+1  desactivar(0) / habilitar(no-zero)
 ```
-*As of Firmata 2.4.0, upon enabling a digital port, the port value should be reported to the client
-application.*
+*A partir de Firmata 2.4.0, al habilitar un puerto digital, el valor del puerto debe ser reportado al cliente aplicación.*
 
-Request version report
+Solicitar informe de versión
 ```
-0  request version report (0xF9) (MIDI Undefined)
+0 solicitar informe de versión (0xF9) (En MIDI no esta definido)
 ```
 
-Sysex Message Format
+Formato de mensaje de Sysex
 ===
 
-System exclusive (sysex) messages are used to define sets of core and optional firmata features. Core features are related to functionality such as digital and analog I/O, querying information about the state and capabilities of the microcontroller board and the firmware running on the board. All core features are documented in this protocol.md file. Optional features extend the hardware capabilities beyond basic digital I/O and analog I/O and also provide APIs to interface with general and specific components and system services. Optional features are individually documented in separate markdown files.
+System exclusive (sysex) los mensajes se utilizan para definir conjuntos de características principales y firmata opcionales. Las características principales están relacionadas con funciones como E/S digitales y analógicas, consultando información sobre el estado y las capacidades de la placa de microcontrolador y el firmware que se ejecuta en la placa. Todas las características principales se documentan en este archivo protocol.md. Las características opcionales amplían las capacidades de hardware más allá de la E/S digital básica y la E/S analógica y también proporcionan API para interactuar con componentes y servicios del sistema generales y específicos. Las características opcionales se documentan individualmente en archivos de markdowns independientes.
 
-
-Each firmata sysex message has a feature ID composed of either a single byte or an extended ID composed of 3 bytes where the first byte is always 0 to indicate it's an extended ID. The following table illustrates the structure. The most significant bit must be set to 0 in each byte between the `START_SYSEX` and `END_SYSEX` which frame the message.
+Cada mensaje firmata sysex tiene un ID de característica, compuesto de un solo byte o un ID extendido compuesto por 3 bytes donde el primer byte siempre es 0 para indicar que es un ID extendido. En la tabla siguiente se muestra la estructura. El bit mas significativo debe establecerse en 0 en cada byte entre el `START_SYSEX` y `END_SYSEX` que enmarcan el mensaje.
 
 | byte 0      | byte 1       | bytes 2 - N-1                             | byte N    |
 | ----------- | ------------ | ----------------------------------------- | --------- |
 | START_SYSEX | ID (01H-7DH) | PAYLOAD                                   | END_SYSEX |
 | START_SYSEX | ID (00H)     | EXTENDED_ID (00H 00H - 7FH 7FH) + PAYLOAD | END_SYSEX |
 
-Following are SysEx commands used for core features defined in this version of the protocol:
+A continuación se muestran los comandos SysEx utilizados para las características principales definidas en esta versión del protocolo:
 
 ```
-EXTENDED_ID                 0x00 // A value of 0x00 indicates the next 2 bytes define the extended ID
-RESERVED               0x01-0x0F // IDs 0x01 - 0x0F are reserved for user defined commands
-ANALOG_MAPPING_QUERY        0x69 // ask for mapping of analog to pin numbers
-ANALOG_MAPPING_RESPONSE     0x6A // reply with mapping info
-CAPABILITY_QUERY            0x6B // ask for supported modes and resolution of all pins
-CAPABILITY_RESPONSE         0x6C // reply with supported modes and resolution
-PIN_STATE_QUERY             0x6D // ask for a pin's current mode and state (different than value)
-PIN_STATE_RESPONSE          0x6E // reply with a pin's current mode and state (different than value)
-EXTENDED_ANALOG             0x6F // analog write (PWM, Servo, etc) to any pin
-STRING_DATA                 0x71 // a string message with 14-bits per char
-REPORT_FIRMWARE             0x79 // report name and version of the firmware
-SAMPLING_INTERVAL           0x7A // the interval at which analog input is sampled (default = 19ms)
-SYSEX_NON_REALTIME          0x7E // MIDI Reserved for non-realtime messages
-SYSEX_REALTIME              0X7F // MIDI Reserved for realtime messages
+EXTENDED_ID                 0x00 // Un valor de 0x00 indica que los siguientes 2 bytes define que es un ID extendido
+RESERVED               0x01-0x0F // ID's 0x01 - 0x0F son reservado para comandos definidos por el usuario
+ANALOG_MAPPING_QUERY        0x69 // consultar mapeo analogicos a numero de pin
+ANALOG_MAPPING_RESPONSE     0x6A // respuesta con informacion de mapeo
+CAPABILITY_QUERY            0x6B // consultar modos compatibles y la resolución de todos los pines
+CAPABILITY_RESPONSE         0x6C // respuesta con modos y resolución compatibles
+PIN_STATE_QUERY             0x6D // consultar el modo y el estado actuales de los pines (diferente del valor)
+PIN_STATE_RESPONSE          0x6E // respuesta el modo y el estado actuales de los pines (diferente del valor)
+EXTENDED_ANALOG             0x6F // escritura analogica (PWM, Servo, etc.) a cualquier pin
+STRING_DATA                 0x71 // un mensaje de cadena con 14 bits por char
+REPORT_FIRMWARE             0x79 // nombre del informe y versión del firmware
+SAMPLING_INTERVAL           0x7A // el intervalo en el que se muestrea la entrada analógica (predeterminado: 19 ms)
+SYSEX_NON_REALTIME          0x7E // MIDI reservado para mensajes no en tiempo real
+SYSEX_REALTIME              0X7F // MIDI reservado para mensajes en tiempo real
 ```
 
-The full set of core and optional Firmata feature IDs is defined in the [firmata-registry.md](https://github.com/firmata/protocol/blob/master/feature-registry.md) file. See the registry for more info on proposing a new feature and obtaining an feature ID.
+El conjunto completo de IDs de características firmata principales y opcionales se define en el archivo [firmata-registry.md](https://github.com/firmata/protocol/blob/master/feature-registry.md). Consulte el registro para obtener más información sobre cómo proponer una nueva característica y obtener un ID de característica.
 
-Query Firmware Name and Version
+Consultar Nombre del Firmware y Version
 ---
+El nombre del firmware que se debe notificar debe ser exactamente el mismo que el nombre de la
+Archivo de cliente Firmata, menos la extensión de archivo. Así que para StandardFirmata.ino, el
+el nombre del firmware es: StandardFirmata.
 
-The firmware name to be reported should be exactly the same as the name of the
-Firmata client file, minus the file extension. So for StandardFirmata.ino, the
-firmware name is: StandardFirmata.
-
-Query firmware Name and Version
+Consultar nombre del firmware y version
 ```
 0  START_SYSEX       (0xF0)
 1  queryFirmware     (0x79)
 2  END_SYSEX         (0xF7)
 ```
 
-Receive Firmware Name and Version (after query)
+Recibir el nombre del Firmware y version (despues de consultar query)
 ```
 0  START_SYSEX       (0xF0)
 1  queryFirmware     (0x79)
-2  major version     (0-127)
-3  minor version     (0-127)
-4  first char of firmware name (LSB)
-5  first char of firmware name (MSB)
-6  second char of firmware name (LSB)
-7  second char of firmware name (MSB)
-... for as many bytes as it needs
+2  principal version (0-127)
+3  menor version     (0-127)
+4  primer char del nombre firmware (LSB)
+5  primer char del nombre firmware (MSB)
+6  segundo char del nombre firmware (LSB)
+7  segundo char del nombre firmware (MSB)
+... para tantos byte como necesite
 N  END_SYSEX         (0xF7)
 ```
 
-Extended Analog
+Analogico extendido
 ---
 
-As an alternative to the normal analog message, this extended version allows
-addressing beyond pin 15 and supports sending analog values with any number of
-bits. The number of data bits is inferred by the length of the message.
+Como alternativa al mensaje analógico normal, esta versión extendida permite
+más allá del pin 15 y admite el envío de valores analógicos con cualquier número de
+bits. El número de bits de datos se deduce por la longitud del mensaje.
 
 ```
 0  START_SYSEX              (0xF0)
 1  extended analog message  (0x6F)
 2  pin                      (0-127)
-3  bits 0-6                 (least significant byte)
-4  bits 7-13                (most significant byte)
-... additional bytes may be sent if more bits are needed
+3  bits 0-6                 (menos significativo byte LSM)
+4  bits 7-13                (mas significativo byte MSB)
+... bytes adicionales se pueden enviar si se necesitan más bits.
 N  END_SYSEX                (0xF7)
 ```
 
-Capability Query
+Consulta de capacidad
 ---
 
 The capability query provides a list of all modes supported by each pin. Each mode is described by 2 bytes where the first byte is the pin mode (such as digital input, digital output, PWM) and the second byte is the resolution (or sometimes the type of pin such as RX or TX for a UART pin). A value of `0x7F` is used as a separator to mark the end each pin's list of modes. The number of pins supported is inferred by the message length.
+La consulta de capacidad proporciona una lista de todos los modos admitidos por cada pin. Cada modo se describe mediante 2 bytes donde el primer byte es el modo pin (como entrada digital, salida digital, PWM) y el segundo byte es la resolución (o a veces el tipo de pin como RX o TX para un pin UART). Un valor de `0x7F` se utiliza como separador para marcar el final de la lista de modos de cada pin. La longitud del mensaje deduce el número de pines admitidos.
 
-### Capabilities query
+### Consulta de capacidad
 ```
 0  START_SYSEX              (0xF0)
 1  CAPABILITY_QUERY         (0x6B)
 2  END_SYSEX                (0xF7)
 ```
 
-### Capabilities response
+### Respuesta capacidad
 ```
 0  START_SYSEX              (0xF0)
 1  CAPABILITY_RESPONSE      (0x6C)
@@ -206,8 +204,8 @@ The capability query provides a list of all modes supported by each pin. Each mo
 N  END_SYSEX                (0xF7)
 ```
 
-#### Supported Modes
-The modes in the following list are the modes of operation that can be returned during the capability response:
+#### Modos soportados
+Los modos de la lista siguiente son los modos de operación que se pueden devolver durante la respuesta de capacidad:
 ```
 DIGITAL_INPUT      (0x00)
 DIGITAL_OUTPUT     (0x01)
@@ -223,15 +221,15 @@ SERIAL             (0x0A)
 INPUT_PULLUP       (0x0B)
 ```
 
-*If no modes are defined for a pin, no values are returned (other than the separator value `0x7F`) and it should be assumed that pin is unsupported by Firmata.*
+*Si no se define ningún modo para un pin, no se devuelve ningún valor (que no sea el valor separador '0x7F') y se debe suponer que el pin no es compatible con Firmata.*
 
-#### Mode Resolution
-The resolution byte serves a couple of different purpose:
+#### Modo Resolucion
+El byte de resolución tiene un par de propósitos diferentes:
 
-1. The original purpose was to define the resolution for analog input, pwm, servo and other modes that define a specific resolution (such as 10-bit for analog).
-2. The resolution byte has been adapted for another purpose for Serial/UART pins, it defines if the pin is RX or TX and which UART it belongs to. [RX0](https://github.com/firmata/protocol/blob/master/serial.md#serial-pin-capability-response) is the RX pin of UART0 (Serial on an Arduino for example), TX1 if the TX pin of UART1 (Serial1 on an Arduino).
+1. El propósito original era definir la resolución para la entrada analógica, pwm, servo y otros modos que definen una resolución específica (como 10 bits para analógico).
+2. El byte de resolución se ha adaptado para otro propósito para los pines Serial/UART, define si el pin es RX o TX y a qué UART pertenece. [RX0] (https://github.com/firmata/protocol/blob/master/serial.md#serial-pin-capability-response) es el pin RX de UART0 (Serial en un Arduino por ejemplo), TX1 si el pin TX de UART1 (Serial1 en un Arduino).:
 
-Modes utilizing the resolution byte as resolution data:
+Modos que utilizan el byte de resolución como datos de resolución:
 ```
 DIGITAL_INPUT      (0x00) // resolution is 1 (binary)
 DIGITAL_OUTPUT     (0x01) // resolution is 1 (binary)
@@ -242,15 +240,15 @@ STEPPER            (0x08) // resolution is number number of bits in max number o
 INPUT_PULLUP       (0x0B) // resolution is 1 (binary)
 ```
 
-Modes utilizing the resolution byte to define type of pin:
+Modos que utilizan el byte de resolución para definir el tipo de pin:
 ```
-SERIAL             (0x0A) // See description in [serial.md](https://github.com/firmata/protocol/blob/master/serial.md#serial-pin-capability-response)
-// also to be added to I2C in the future to define SCL and SDA pins
+SERIAL             (0x0A) // Ver descripcion en [serial.md](https://github.com/firmata/protocol/blob/master/serial.md#serial-pin-capability-response)
+// también se añadirá a I2C en el futuro para definir pines SCL y SDA
 ```
 
-*For other features (including I2C until updated) the resolution information is less important so a value of 1 is used.*
+*Para otras características (incluyendo I2C hasta que se actualice) la información de resolución es menos importante por lo que se utiliza un valor de 1.*
 
-Analog Mapping Query
+Consulta de mapeo analogico
 ---
 
 Analog messages are numbered 0 to 15, which traditionally refer to the Arduino
@@ -260,14 +258,22 @@ non-analog functions. The analog mapping query provides the information about
 which pins (as used with Firmata's pin mode message) correspond to the analog
 channels.
 
-Analog mapping query
+
+Los mensajes analógicos están numerados del 0 al 15, que tradicionalmente se refieren al
+pines etiquetados A0, A1, A2, etc. Sin embargo, estos pines se configuran realmente usando
+números de pin "normales" en el mensaje de modo pin, y cuando esos pines se utilizan para
+funciones no analógicas. La consulta de mapeo analógico proporciona la información sobre
+que los pines (como se utiliza con el mensaje de modo pin de Firmata) corresponden a los
+Canales Analogicos.
+
+Consulta de mapeo analogico
 ```
 0  START_SYSEX              (0xF0)
 1  analog mapping query     (0x69)
 2  END_SYSEX                (0xF7)
 ```
 
-Analog mapping response
+Respuesta de mapeo analogico
 ```
 0  START_SYSEX              (0xF0)
 1  analog mapping response  (0x6A)
@@ -283,20 +289,21 @@ board). Because this information is fixed and should only need to be read once,
 these messages are designed for a simple implementation in StandardFirmata,
 rather that bandwidth savings (eg, using packed bit fields).*
 
+*Las 2 consultas anteriores proporcionan datos estáticos (nunca deben cambiar para un
+board). Debido a que esta información es fija y sólo debe leerse una vez,
+estos mensajes están diseñados para una implementación simple en StandardFirmata,
+más bien que el ahorro de ancho de banda (por ejemplo, utilizando campos de bits empaquetados).*
 
-Pin State Query
+
+Consulta del estado del Pin
 ---
 
-The pin **state** is any data written to the pin (*it is important to note that
-pin state != pin value*). For output modes (digital output,
-PWM, and Servo), the state is any value that has been previously written to the
-pin. For input modes, typically the state is zero. However, for digital inputs,
-the state is the status of the pull-up resistor which is 1 if enabled, 0 if disabled.
+El **estado** del pin es cualquier dato escrito en el pin (*es importante tener en cuenta que el estado del pin es distinto al valor del pin*). Para los modos de salida (salida digital, PWM y Servo), el estado es cualquier valor que se haya escrito previamente en el pin. Para los modos de entrada, normalmente el estado es cero. Sin embargo, para las entradas digitales, el estado es el estado de la resistencia pull-up que es 1 si está habilitado, 0 si está deshabilitado.
 
-The pin state query can also be used as a verification after sending pin modes
-or data messages.
+La consulta de estado de pin también se puede utilizar como verificación después de enviar modos de pin
+o mensajes de datos.
 
-Pin state query
+Consulta de estado de pin
 ```
 0  START_SYSEX              (0xF0)
 1  pin state query          (0x6D)
@@ -304,7 +311,7 @@ Pin state query
 3  END_SYSEX                (0xF7)
 ```
 
-Pin state response
+Respuesta del estado del pin
 ```
 0  START_SYSEX              (0xF0)
 1  pin state response       (0x6E)
@@ -320,9 +327,10 @@ N  END_SYSEX                (0xF7)
 String
 ---
 
-Send short string messages between the board and the client application. String length is limited
-to half the buffer size - 3 (for Arduino this limits strings to 30 chars). Commonly used to report
-error messages to the client.
+Enviar mensajes de texto corto entre el board y la aplicación cliente (Software remoto o host). La longitud del texto es limitada
+a la mitad del tamaño del búfer - 3 (para Arduino esto limita las cadenas a 30 caracteres). Comúnmente utilizado para reportar
+mensajes de error al cliente.
+
 ```
 0  START_SYSEX        (0xF0)
 1  STRING_DATA        (0x71)
@@ -334,13 +342,14 @@ error messages to the client.
 N  END_SYSEX          (0xF7)
 ```
 
-Sampling Interval
+Intervalo de muestreo
 ---
 
 The sampling interval sets how often analog data and i2c data is reported to the
 client. The default for the arduino implementation is 19ms. This means that every
 19ms analog data will be reported and any i2c devices with read continuous mode
 will be read.
+El intervalo de muestreo establece la frecuencia con la que se notifican los datos analógicos y los datos i2c a la al Cliente. El valor predeterminado para la implementación de arduino es 19ms. Esto significa que cada 19ms se informarán datos analógicos y cualquier dispositivo i2c con modo continuo de lectura será leído.
 ```
 0  START_SYSEX        (0xF0)
 1  SAMPLING_INTERVAL  (0x7A)
