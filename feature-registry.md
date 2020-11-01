@@ -1,27 +1,31 @@
-# Firmata sysex feature registry
+# Registro de caracteristicas Firmata sysex
 
+Los registros de caracteristicas de
 The feature registry defines allocated and proposed Firmata feature IDs. The feature ID is the 2nd byte in the sysex message. An extended set of IDs is also available by setting the initial ID byte to `00H` and then following with a 2 byte ID. All bytes between `START_SYSEX` and `END_SYSEX` must have the most significant bit set to 0.
 
+Los registro de características define los ID de características Firmata asignados y propuestos. El ID de característica es el 2do byte en el mensaje sysex. Un conjunto extendido de ID's también está disponible estableciendo el byte de ID inicial en '00H' y luego siguiendo con un identificador de 2 bytes. Todos los bytes entre `START_SYSEX` y `END_SYSEX` deben tener el bit más significativo establecido en 0.
 
 | byte 0      | byte 1       | bytes 2 - N-1                             | byte N    |
 | ----------- | ------------ | ----------------------------------------- | --------- |
 | START_SYSEX | ID (01H-7DH) | PAYLOAD                                   | END_SYSEX |
 | START_SYSEX | ID (00H)     | EXTENDED_ID (00H 00H - 7FH 7FH) + PAYLOAD | END_SYSEX |
 
-Proposing a new feature
+Proponer una nueva funcion
 ===
 
 There are two different feature sets: [Core features](#core-feature-set) and [optional features](#optional-feature-set). See the descriptions for each type of feature set below. To propose a new core feature, open an issue to start a discussion. To propose a new optional feature, [open an issue](https://github.com/firmata/protocol/issues)/and or a pull request adding a markdown file for the proposed feature. Also edit the [optional feature set table](#optional-feature-set) to reserve an ID for the proposed feature and enter the status as "proposed". If the proposed feature exposes a very specific device or device driver (a NeoPixel light strip for example), assign an ID in the extended ID set (`00H nnH nnH`).
 
+Hay dos conjuntos de características diferentes: [Características principales](#core-feature-set) y [características opcionales](#optional-feature-set). Consulte las descripciones de cada tipo de conjunto de características a continuación. Para proponer una nueva característica básica, abra un problema para iniciar un debate. Para proponer una nueva característica opcional, [abrir un problema](https://github.com/firmata/protocol/issues)/y una solicitud de extracción agregando un archivo de reducción para la característica propuesta. Edite también la [tabla de conjunto de características opcional](#optional-feature-set) para reservar un ID para la entidad propuesta e introduzca el estado como "propuesto". Si la característica propuesta expone un dispositivo o controlador de dispositivo muy específico (por ejemplo, una tira de luz NeoPixel), asigne un ID en el conjunto de ID extendido (`00H nnH nnH`).
 
-Core feature set
+
+Conjunto de características principales
 ===
 
-Core features are related to functionality such as digital and analog I/O, querying information about the state and capabilities of the microcontroller board and the firmware running on the board. The core features are documented in the [protocol.md](https://github.com/firmata/protocol/blob/master/protocol.md) file and the full set of core features is versioned together using [semver](http://semver.org/) notation. The current protocol version is 2.5.1.
+Las características principales están relacionadas con funciones como E/S digitales y analógicas, consultando información sobre el estado y las capacidades de la placa de microcontrolador y el firmware que se ejecuta en la placa. Las características principales se documentan en el archivo [protocol.md](https://github.com/firmata/protocol/blob/master/protocol.md) y el conjunto completo de características principales se versiona juntos mediante la notación [semver](http://semver.org/). La versión actual del protocolo es 2.5.1.
 
-Firmata firmware should report the current protocol version (using the [protocol version command: 0xF9](https://github.com/firmata/protocol/blob/master/protocol.md#message-types)) and implement the full set of current core features defined for that version (with the exception of very limited hardware which can implement a subset of the core feature set).
+El firmware de Firmata debe informar de la versión actual del protocolo (mediante el comando [protocol version: 0xF9](https://github.com/firmata/protocol/blob/master/protocol.md-message-types)) e implementar el conjunto completo de características principales actuales definidas para esa versión (con la excepción de hardware muy limitado que puede implementar un subconjunto del conjunto de características principal).
 
-*The range 01H - 0FH is reserved for user-defined features that are not added to this registry.*
+*El rango 01H - 0FH está reservado para las características definidas por el usuario que no se agregan a este registro.*
 
 
 | Feature ID  | Feature name / link to documentation | Status     |
@@ -45,15 +49,15 @@ Firmata firmware should report the current protocol version (using the [protocol
 | 7EH         | SYSEX_NON_REALTIME*                  | n/a        |
 | 7FH         | SYSEX_REALTIME*                      | n/a        |
 
-**7EH and 7FH are reserved because they have a special meaning to midi parsers.*
+**7EH y 7FH están reservados porque tienen un significado especial para los analizadores midi.*
 
 
-Optional feature set
+Conjunto de funciones opcional
 ===
 
-Optional features extend the hardware capabilities beyond basic digital I/O and analog I/O (eg: I2C, Serial/UART, etc). Optional features also provide APIs to interface with general components (eg: servo, stepper, rotary encoder, etc) as well as specific components (eg: DHT11, NeoPixel, etc). The optional feature set also encompass functionality such as a general purpose scheduler API and a standardized device interface API. General features should use the single byte feature ID (allocating new IDs in descending order). However, any feature that wraps a specific driver, specific sensor, one-off custom component, etc should use the extended feature ID (`00H nnH nnH`) or should use the `DEVICE_QUERY/RESPONSE` API.
+Las características opcionales amplían las capacidades de hardware más allá de la E/S digital básica y la E/S analógica (por ejemplo: I2C, Serial/UART, etc.). Las características opcionales también proporcionan API para interactuar con componentes generales (por ejemplo: servo, paso a paso, codificador rotativo, etc.), así como componentes específicos (por ejemplo: DHT11, NeoPixel, etc.). El conjunto de características opcionales también incluye funciones como una API de programador de propósito general y una API de interfaz de dispositivo estandarizada. Las características generales deben utilizar el ID de entidad de un solo byte (asignación de nuevos identificadores en orden descendente). Sin embargo, cualquier característica que envuelve un controlador específico, un sensor específico, un componente personalizado único, etc. debe utilizar el ID de característica extendida (`00H nnH nnH`) o debe utilizar la API `DEVICE_QUERY/RESPONSE`.
 
-Each feature should be documented in a markdown file and versioned independently using [semver](http://semver.org/) notation. In the case where a feature spans multiple IDs (I2C for example), that entire set is documented in a single file and versioned together.
+Cada característica debe documentarse en un archivo de markdown y versionarse de forma independiente utilizando la notación [semver](http://semver.org/). En el caso de que una característica abarque varios ID (I2C por ejemplo), todo ese conjunto se documenta en un único archivo y se versiona juntos.
 
 
 | Feature ID  | Feature name                       | Link to documentation  | Status     |
